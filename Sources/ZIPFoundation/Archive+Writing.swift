@@ -49,7 +49,7 @@ extension Archive {
     public func addEntry(with path: String, fileURL: URL, compressionMethod: CompressionMethod = .none,
                          bufferSize: UInt32 = defaultWriteChunkSize, progress: Progress? = nil) throws {
         let fileManager = FileManager()
-        guard fileManager.itemExists(at: fileURL) else {
+        guard fileManager.fileExists(atPath: fileURL.path) else {
             throw CocoaError(.fileReadNoSuchFile, userInfo: [NSFilePathErrorKey: fileURL.path])
         }
         let type = try FileManager.typeForItem(at: fileURL)
