@@ -33,10 +33,10 @@ extension FileManager {
                         shouldKeepParent: Bool = true, compressionMethod: CompressionMethod = .none,
                         progress: Progress? = nil) throws {
         let fileManager = FileManager()
-        guard fileManager.itemExists(at: sourceURL) else {
+        guard fileManager.fileExists(atPath: sourceURL.path) else {
             throw CocoaError(.fileReadNoSuchFile, userInfo: [NSFilePathErrorKey: sourceURL.path])
         }
-        guard !fileManager.itemExists(at: destinationURL) else {
+        guard !fileManager.fileExists(atPath: destinationURL.path) else {
             throw CocoaError(.fileWriteFileExists, userInfo: [NSFilePathErrorKey: destinationURL.path])
         }
         guard let archive = Archive(url: destinationURL, accessMode: .create) else {
