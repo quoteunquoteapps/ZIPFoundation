@@ -141,7 +141,16 @@ extension FileManager {
         // would throw a `.fileReadNoSuchFile` false positive error.
         // For ZIP files it may be intended to archive "broken" symlinks because they might be
         // resolvable again when extracting the archive to a different destination.
-        return (try? url.checkResourceIsReachable()) == true
+        //
+        // return (try? url.checkResourceIsReachable()) == true
+        // --------------------------------------------------------------------------
+        // The above code triggers multiple Swift exception debug breakpoints, making
+        // it incredibly difficult to use Swift exception breakpoints and this code in
+        // the same app, because you have to manually continue past each exception.
+        //
+        // Since we don't need to worry about symlinks, we're just going to use the
+        // recommended `FileManager.fileExists()` method.
+        return FileManager.default.fileExists(atPath: url.path)
     }
 
     func createParentDirectoryStructure(for url: URL) throws {
