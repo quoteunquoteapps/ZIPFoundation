@@ -2,7 +2,7 @@
 //  Archive+BackingConfiguration.swift
 //  ZIPFoundation
 //
-//  Copyright © 2017-2023 Thomas Zoechling, https://www.peakstep.com and the ZIP Foundation project authors.
+//  Copyright © 2017-2024 Thomas Zoechling, https://www.peakstep.com and the ZIP Foundation project authors.
 //  Released under the MIT License.
 //
 //  See https://github.com/weichsel/ZIPFoundation/blob/master/LICENSE for license information.
@@ -83,17 +83,8 @@ extension Archive {
     #if swift(>=5.0)
     static func makeBackingConfiguration(for data: Data, mode: AccessMode) throws
     -> BackingConfiguration {
-        let posixMode: String
-        switch mode {
-        case .read: posixMode = "rb"
-        case .create: posixMode = "wb+"
-        case .update: posixMode = "rb+"
-        }
         let memoryFile = MemoryFile(data: data)
-        guard let archiveFile = memoryFile.open(mode: posixMode) else {
-            throw ArchiveError.unreadableArchive
-        }
-
+        let archiveFile = memoryFile.open(mode: mode)
         switch mode {
         case .read:
             guard let (eocdRecord, zip64EOCD) = Archive.scanForEndOfCentralDirectoryRecord(in: archiveFile) else {

@@ -2,7 +2,7 @@
 //  ZIPFoundationErrorConditionTests.swift
 //  ZIPFoundation
 //
-//  Copyright © 2017-2023 Thomas Zoechling, https://www.peakstep.com and the ZIP Foundation project authors.
+//  Copyright © 2017-2024 Thomas Zoechling, https://www.peakstep.com and the ZIP Foundation project authors.
 //  Released under the MIT License.
 //
 //  See https://github.com/weichsel/ZIPFoundation/blob/master/LICENSE for license information.
@@ -14,6 +14,7 @@ extension ZIPFoundationTests {
 
     func testArchiveReadErrorConditions() {
         let nonExistantURL = URL(fileURLWithPath: "/nothing")
+        XCTAssertPOSIXError(try Archive(url: nonExistantURL, accessMode: .read), throwsErrorWithCode: .ENOENT)
         XCTAssertPOSIXError(try Archive(url: nonExistantURL, accessMode: .update), throwsErrorWithCode: .ENOENT)
         let processInfo = ProcessInfo.processInfo
         let fileManager = FileManager()
@@ -25,6 +26,9 @@ extension ZIPFoundationTests {
                                         attributes: fullPermissionAttributes)
         XCTAssert(result == true)
         XCTAssertSwiftError(try Archive(url: noEndOfCentralDirectoryArchiveURL, accessMode: .read),
+                            throws: Archive.ArchiveError.missingEndOfCentralDirectoryRecord)
+        let invalidEndOfCentralDirectoryArchiveURL = self.resourceURL(for: #function, pathExtension: "zip")
+        XCTAssertSwiftError(try Archive(url: invalidEndOfCentralDirectoryArchiveURL, accessMode: .read),
                             throws: Archive.ArchiveError.missingEndOfCentralDirectoryRecord)
         self.runWithUnprivilegedGroup {
             var unreadableArchiveURL = ZIPFoundationTests.tempZipDirectoryURL

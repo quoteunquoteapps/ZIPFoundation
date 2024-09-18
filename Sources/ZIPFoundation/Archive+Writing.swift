@@ -2,7 +2,7 @@
 //  Archive+Writing.swift
 //  ZIPFoundation
 //
-//  Copyright © 2017-2023 Thomas Zoechling, https://www.peakstep.com and the ZIP Foundation project authors.
+//  Copyright © 2017-2024 Thomas Zoechling, https://www.peakstep.com and the ZIP Foundation project authors.
 //  Released under the MIT License.
 //
 //  See https://github.com/weichsel/ZIPFoundation/blob/master/LICENSE for license information.
@@ -57,7 +57,7 @@ extension Archive {
         let type = try FileManager.typeForItem(at: fileURL)
         // symlinks do not need to be readable
         guard type == .symlink || fileManager.isReadableFile(atPath: fileURL.path) else {
-            throw CocoaError(.fileReadNoPermission, userInfo: [NSFilePathErrorKey: url.path])
+            throw CocoaError(.fileReadNoPermission, userInfo: [NSFilePathErrorKey: fileURL.path])
         }
         let modDate = try FileManager.fileModificationDateTimeForItem(at: fileURL)
         let uncompressedSize = type == .directory ? 0 : try FileManager.fileSizeForItem(at: fileURL)
@@ -218,7 +218,6 @@ extension Archive {
     }
 
     func replaceCurrentArchive(with archive: Archive) throws {
-        fclose(self.archiveFile)
         if self.isMemoryArchive {
             #if swift(>=5.0)
             guard let data = archive.data else {
@@ -246,6 +245,7 @@ extension Archive {
             #endif
             let fileSystemRepresentation = fileManager.fileSystemRepresentation(withPath: self.url.path)
             guard let file = fopen(fileSystemRepresentation, "rb+") else { throw ArchiveError.unreadableArchive }
+
             self.archiveFile = file
         }
     }

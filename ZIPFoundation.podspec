@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'ZIPFoundation'
-  s.version = '0.9.17'
+  s.version = '0.9.19'
   s.license = 'MIT'
   s.summary = 'Effortless ZIP Handling in Swift'
   s.homepage = 'https://github.com/weichsel/ZIPFoundation'
@@ -16,5 +16,5 @@ Pod::Spec.new do |s|
   s.visionos.deployment_target = '1.0'
 
   s.source_files = 'Sources/ZIPFoundation/*.swift'
-  s.resource = 'Sources/ZIPFoundation/Resources/PrivacyInfo.xcprivacy'
+  s.resource_bundles = {'ZIPFoundation_Privacy' => ['Sources/ZIPFoundation/Resources/PrivacyInfo.xcprivacy']}
 end

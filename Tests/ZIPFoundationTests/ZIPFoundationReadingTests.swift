@@ -2,7 +2,7 @@
 //  ZIPFoundationReadingTests.swift
 //  ZIPFoundation
 //
-//  Copyright © 2017-2023 Thomas Zoechling, https://www.peakstep.com and the ZIP Foundation project authors.
+//  Copyright © 2017-2024 Thomas Zoechling, https://www.peakstep.com and the ZIP Foundation project authors.
 //  Released under the MIT License.
 //
 //  See https://github.com/weichsel/ZIPFoundation/blob/master/LICENSE for license information.
@@ -275,7 +275,15 @@ extension ZIPFoundationTests {
                             throws: Archive.ArchiveError.invalidCRC32)
     }
 
-    func testTraversalAttack() {
+    func testSimpleTraversalAttack() {
+        let fileManager = FileManager()
+        let archive = self.archive(for: #function, mode: .read)
+        let destinationURL = self.createDirectory(for: #function)
+        XCTAssertCocoaError(try fileManager.unzipItem(at: archive.url, to: destinationURL),
+                            throwsErrorWithCode: .fileReadInvalidFileName)
+    }
+
+    func testPathDelimiterTraversalAttack() {
         let fileManager = FileManager()
         let archive = self.archive(for: #function, mode: .read)
         let destinationURL = self.createDirectory(for: #function)

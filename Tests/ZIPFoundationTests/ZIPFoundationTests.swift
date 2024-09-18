@@ -2,7 +2,7 @@
 //  ZIPFoundationTests.swift
 //  ZIPFoundation
 //
-//  Copyright © 2017-2023 Thomas Zoechling, https://www.peakstep.com and the ZIP Foundation project authors.
+//  Copyright © 2017-2024 Thomas Zoechling, https://www.peakstep.com and the ZIP Foundation project authors.
 //  Released under the MIT License.
 //
 //  See https://github.com/weichsel/ZIPFoundation/blob/master/LICENSE for license information.
@@ -118,16 +118,16 @@ class ZIPFoundationTests: XCTestCase {
 
     func createDirectory(for testFunction: String) -> URL {
         let fileManager = FileManager()
-        var URL = ZIPFoundationTests.tempZipDirectoryURL
-        URL = URL.appendingPathComponent(self.pathComponent(for: testFunction))
+        var url = ZIPFoundationTests.tempZipDirectoryURL
+        url = url.appendingPathComponent(self.pathComponent(for: testFunction), isDirectory: true)
         do {
-            try fileManager.createDirectory(at: URL, withIntermediateDirectories: true, attributes: nil)
+            try fileManager.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
         } catch {
             XCTFail("Failed to get create directory for test function:\(testFunction)")
             type(of: self).tearDown()
             preconditionFailure()
         }
-        return URL
+        return url
     }
 
     func runWithUnprivilegedGroup(handler: () throws -> Void) {
@@ -152,15 +152,6 @@ class ZIPFoundationTests: XCTestCase {
         setrlimit(fileNoFlag, &tempRlimit)
         defer { setrlimit(fileNoFlag, &storedRlimit) }
         try handler()
-    }
-
-    func runWithoutMemory(handler: () -> Void) {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
-        let systemAllocator = CFAllocatorGetDefault().takeUnretainedValue()
-        CFAllocatorSetDefault(kCFAllocatorNull)
-        defer { CFAllocatorSetDefault(systemAllocator) }
-        handler()
-        #endif
     }
 
     // MARK: - ZIP64 Helpers
@@ -253,10 +244,12 @@ extension ZIPFoundationTests {
             ("testRemoveEntryErrorConditions", testRemoveEntryErrorConditions),
             ("testRemoveUncompressedEntry", testRemoveUncompressedEntry),
             ("testTemporaryReplacementDirectoryURL", testTemporaryReplacementDirectoryURL),
-            ("testTraversalAttack", testTraversalAttack),
+            ("testSimpleTraversalAttack", testSimpleTraversalAttack),
+            ("testPathDelimiterTraversalAttack", testPathDelimiterTraversalAttack),
             ("testUnzipItem", testUnzipItem),
             ("testUnzipItemWithPreferredEncoding", testUnzipItemWithPreferredEncoding),
             ("testUnzipItemErrorConditions", testUnzipItemErrorConditions),
+            ("testUnzipUncontainedSymlink", testUnzipUncontainedSymlink),
             ("testZipItem", testZipItem),
             ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests)
         ] + zip64Tests + darwinOnlyTests + swift5OnlyTests
@@ -332,7 +325,6 @@ extension ZIPFoundationTests {
     static var swift5OnlyTests: [(String, (ZIPFoundationTests) -> () throws -> Void)] {
         #if swift(>=5.0)
         return [
-            ("testAppendFile", testAppendFile),
             ("testCreateArchiveAddUncompressedEntryToMemory", testCreateArchiveAddUncompressedEntryToMemory),
             ("testCreateArchiveAddCompressedEntryToMemory", testCreateArchiveAddCompressedEntryToMemory),
             ("testUpdateArchiveRemoveUncompressedEntryFromMemory", testUpdateArchiveRemoveUncompressedEntryFromMemory),
@@ -377,6 +369,7 @@ extension Data {
 
 #if os(macOS)
 extension NSUserScriptTask {
+
     static func makeVolumeCreationTask(at tempDir: URL, volumeName: String) throws -> NSUserScriptTask {
         let scriptURL = tempDir.appendingPathComponent("createVol.sh", isDirectory: false)
         let dmgURL = tempDir.appendingPathComponent(volumeName).appendingPathExtension("dmg")
